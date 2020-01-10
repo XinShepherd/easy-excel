@@ -11,15 +11,12 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ExcelContext {
 
-    private final Map<String, Object> properties;
-
     /**
      * 根据全类名获取字体类型bean
      */
     private final Map<String, FontStyle> fontStyleMap;
 
     public ExcelContext() {
-        properties = new ConcurrentHashMap<>();
         fontStyleMap = new ConcurrentHashMap<>();
     }
 

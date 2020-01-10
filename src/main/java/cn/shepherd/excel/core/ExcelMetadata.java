@@ -1,6 +1,7 @@
 package cn.shepherd.excel.core;
 
 import cn.shepherd.excel.annotation.Excel;
+import cn.shepherd.excel.annotation.ExcelBigHead;
 import cn.shepherd.excel.annotation.ExcelField;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -16,20 +17,24 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
+ * Excel 单个 sheet 的元数据
  * @author Fuxin
  * @since 2019/11/23 13:48
  */
 public class ExcelMetadata<T> {
-    /**  */
+    /** sheet 实体类 */
     private final Class<T> clazz;
 
-    /**  */
+    /** sheet注解，设置表头的全局样式 */
     private final Excel metaExcel;
 
-    /**  */
+    /** sheet注解，设置大标题 */
+    private final ExcelBigHead excelBigHead;
+
+    /** 单个sheet的数据 */
     private final List<T> data;
 
-    /**  */
+    /** 表头字段 */
     private final List<Field> excelFields;
 
     /**  */
@@ -54,6 +59,7 @@ public class ExcelMetadata<T> {
         if (Objects.isNull(excel))
             throw new ExcelException(String.format("Can not get the @Excel annotation from this class %s", clazz.getName()));
         Objects.requireNonNull(data, "Data could not be null.");
+        this.excelBigHead = clazz.getAnnotation(ExcelBigHead.class);
         this.clazz = clazz;
         this.data = data;
         this.metaExcel = excel;
@@ -73,6 +79,10 @@ public class ExcelMetadata<T> {
 
     public Excel getMetaExcel() {
         return metaExcel;
+    }
+
+    public ExcelBigHead getExcelBigHead() {
+        return excelBigHead;
     }
 
     public List<Field> getExcelFields() {

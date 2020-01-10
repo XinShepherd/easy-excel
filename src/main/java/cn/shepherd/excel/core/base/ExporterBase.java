@@ -1,17 +1,20 @@
 package cn.shepherd.excel.core.base;
 
 import cn.shepherd.excel.annotation.Excel;
+import cn.shepherd.excel.annotation.ExcelBigHead;
 import cn.shepherd.excel.annotation.ExcelField;
 import cn.shepherd.excel.core.*;
 import cn.shepherd.excel.core.util.DateTimeUtil;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
 
 import java.lang.reflect.Field;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.TemporalAccessor;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author Fuxin
@@ -44,17 +47,95 @@ public abstract class ExporterBase {
     private <T> void createSheet(ExcelMetadata<T> metadata) {
         // 创建Sheet页
         Sheet sheet = metadata.getWorkbook().createSheet(metadata.getMetaExcel().value());
-        handleHeader(metadata, sheet);
-        handleRows(metadata, sheet);
+        AtomicInteger rowNumber = new AtomicInteger(0);
+        handleBigHead(metadata, sheet, rowNumber);
+        handleHeader(metadata, sheet, rowNumber);
+        handleRows(metadata, sheet, rowNumber);
     }
 
-    private <T> void handleRows(ExcelMetadata<T> metadata, Sheet sheet) {
+    private <T> void handleBigHead(ExcelMetadata<T> metadata, Sheet sheet, AtomicInteger rowNumber) {
+        ExcelBigHead bigHead = metadata.getExcelBigHead();
+        if (Objects.nonNull(bigHead)) {
+            // 处理样式
+            Class<? extends FontStyle> fontStyleClazz = bigHead.fontStyle();
+            Workbook workbook = metadata.getWorkbook();
+            Font font = createFont(workbook, context.getFontStyle(fontStyleClazz));
+            CellStyle cellStyle = getMediumCellStyle(workbook);
+            cellStyle.setFont(font);
+            cellStyle.setAlignment(bigHead.horizontalAlignment());
+            cellStyle.setVerticalAlignment(bigHead.verticalAlignment());
+
+            Row row = sheet.createRow(bigHead.fromRow());
+            Cell cell = row.createCell(bigHead.fromColumn());
+            cell.setCellStyle(cellStyle);
+            cell.setCellValue(bigHead.value());
+            int toColumn = bigHead.autoMergeColumn()
+                    ? Math.max(metadata.getExcelFields().size() - 1, 1)
+                    : bigHead.toColumn();
+            sheet.addMergedRegion(new CellRangeAddress(bigHead.fromRow(), bigHead.toRow(), bigHead.fromColumn(), toColumn));
+            rowNumber.incrementAndGet();
+        }
+    }
+
+    private <T> void handleHeader(ExcelMetadata<T> metadata, Sheet sheet, AtomicInteger rowNumber) {
+        Row header = sheet.createRow(rowNumber.get());
+        List<Field> excelFields = metadata.getExcelFields();
+        Excel metaExcel = metadata.getMetaExcel();
+        Workbook workbook = metadata.getWorkbook();
+        // 处理字体
+        Class<? extends FontStyle> fontStyleClazz = metaExcel.fontStyle();
+        Font font = createFont(workbook, context.getFontStyle(fontStyleClazz));
+        // 处理表头高度
+        header.setHeight(metaExcel.herderHigh());
+        // 处理是否固定表头
+        if (metaExcel.freezePane()) {
+            sheet.createFreezePane(1, 1);
+        }
+        for (int i = 0; i < excelFields.size(); i++) {
+            Field field = excelFields.get(i);
+            ExcelField excelField = field.getAnnotation(ExcelField.class);
+            Cell cell = header.createCell(i);
+            cell.setCellValue(excelField.value());
+            CellStyle cellStyle = getMediumCellStyle(workbook);
+            Class<? extends FontStyle> cellFontStyle = excelField.fontStyle();
+            if (DefaultFontStyle.class.equals(cellFontStyle)) {
+                cellStyle.setFont(font);
+            } else {
+                Font cellFont = createFont(workbook, context.getFontStyle(cellFontStyle));
+                cellStyle.setFont(cellFont);
+            }
+            if (metaExcel.headerColor() != -1) {
+                cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+                cellStyle.setFillForegroundColor(metaExcel.headerColor());
+            }
+            if (excelField.headerColor() != -1) {
+                cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+                cellStyle.setFillForegroundColor(excelField.headerColor());
+            }
+            cellStyle.setAlignment(excelField.horizontalAlignment());
+            cellStyle.setVerticalAlignment(excelField.verticalAlignment());
+            cell.setCellStyle(cellStyle);
+            sheet.setColumnWidth(i, excelField.width() * 128);
+        }
+    }
+
+    private CellStyle getMediumCellStyle(Workbook workbook) {
+        // 定义Cell格式
+        CellStyle cellStyle = workbook.createCellStyle();
+        cellStyle.setBorderLeft(BorderStyle.MEDIUM);
+        cellStyle.setBorderRight(BorderStyle.MEDIUM);
+        cellStyle.setBorderBottom(BorderStyle.MEDIUM);
+        cellStyle.setBorderTop(BorderStyle.MEDIUM);
+        return cellStyle;
+    }
+
+    private <T> void handleRows(ExcelMetadata<T> metadata, Sheet sheet, AtomicInteger rowNumber) {
         try {
             List<Field> excelFields = metadata.getExcelFields();
             Excel metaExcel = metadata.getMetaExcel();
             for (int i = 0; i < metadata.getData().size(); i++) {
                 T item = metadata.getData().get(i);
-                Row row = sheet.createRow(i + 1);
+                Row row = sheet.createRow(rowNumber.incrementAndGet());
                 row.setHeight(metaExcel.rowHigh());
                 for (int j = 0; j < excelFields.size(); j++) {
                     Cell cell = row.createCell(j);
@@ -87,30 +168,10 @@ public abstract class ExporterBase {
             });
             switch (excelField.type()) {
                 case DATE:
-                    if (fieldValue instanceof Date) {
-                        cell.setCellValue((Date) fieldValue);
-                    } else if (fieldValue instanceof Number) {
-                        cell.setCellValue(Double.valueOf(fieldValue.toString()));
-                    } else if (fieldValue instanceof LocalDateTime) {
-                        cell.setCellValue((LocalDateTime) fieldValue);
-                    } else if (fieldValue instanceof LocalDate) {
-                        cell.setCellValue((LocalDate) fieldValue);
-                    } else if (fieldValue instanceof String) {
-                        Double excelTime = DateTimeUtil.parseDateTime((String) fieldValue);
-                        if(Objects.nonNull(excelTime))
-                            cell.setCellValue(excelTime);
-                    }
+                    setDateValue(cell, fieldValue);
                     break;
                 case TIME:
-                    if (fieldValue instanceof Date) {
-                        cell.setCellValue((Date) fieldValue);
-                    } else if (fieldValue instanceof Number) {
-                        cell.setCellValue(Double.valueOf(fieldValue.toString()));
-                    } else if (fieldValue instanceof TemporalAccessor) {
-                        cell.setCellValue(DateTimeUtil.convertTime((TemporalAccessor) fieldValue));
-                    } else if (fieldValue instanceof String) {
-                        cell.setCellValue(DateTimeUtil.convertTime((String) fieldValue));
-                    }
+                    setTimeValue(cell, fieldValue);
                     break;
                 case NUMERIC:
                     cell.setCellValue(Double.valueOf(fieldValue.toString()));
@@ -124,50 +185,31 @@ public abstract class ExporterBase {
         }
     }
 
-    private <T> void handleHeader(ExcelMetadata<T> metadata, Sheet sheet) {
-        Row header = sheet.createRow(0);
-        List<Field> excelFields = metadata.getExcelFields();
-        Excel metaExcel = metadata.getMetaExcel();
-        Workbook workbook = metadata.getWorkbook();
-        // 处理字体
-        Class<? extends FontStyle> fontStyleClazz = metaExcel.fontStyle();
-        Font font = createFont(workbook, context.getFontStyle(fontStyleClazz));
-        // 处理表头高度
-        header.setHeight(metaExcel.herderHigh());
-        // 处理是否固定表头
-        if (metaExcel.freezePane()) {
-            sheet.createFreezePane(1, 1);
+    private void setTimeValue(Cell cell, Object fieldValue) {
+        if (fieldValue instanceof Date) {
+            cell.setCellValue((Date) fieldValue);
+        } else if (fieldValue instanceof Number) {
+            cell.setCellValue(Double.valueOf(fieldValue.toString()));
+        } else if (fieldValue instanceof TemporalAccessor) {
+            cell.setCellValue(DateTimeUtil.convertTime((TemporalAccessor) fieldValue));
+        } else if (fieldValue instanceof String) {
+            cell.setCellValue(DateTimeUtil.convertTime((String) fieldValue));
         }
-        for (int i = 0; i < excelFields.size(); i++) {
-            Field field = excelFields.get(i);
-            ExcelField excelField = field.getAnnotation(ExcelField.class);
-            Cell cell = header.createCell(i);
-            cell.setCellValue(excelField.value());
-            // 定义Cell格式
-            CellStyle cellStyle = workbook.createCellStyle();
-            cellStyle.setBorderLeft(BorderStyle.MEDIUM);
-            cellStyle.setBorderRight(BorderStyle.MEDIUM);
-            cellStyle.setBorderBottom(BorderStyle.MEDIUM);
-            cellStyle.setBorderTop(BorderStyle.MEDIUM);
-            Class<? extends FontStyle> cellFontStyle = excelField.fontStyle();
-            if (DefaultFontStyle.class.equals(cellFontStyle)) {
-                cellStyle.setFont(font);
-            } else {
-                Font cellFont = createFont(workbook, context.getFontStyle(cellFontStyle));
-                cellStyle.setFont(cellFont);
-            }
-            if (metaExcel.headerColor() != -1) {
-                cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-                cellStyle.setFillForegroundColor(metaExcel.headerColor());
-            }
-            if (excelField.headerColor() != -1) {
-                cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-                cellStyle.setFillForegroundColor(excelField.headerColor());
-            }
-            cellStyle.setAlignment(excelField.horizontalAlignment());
-            cellStyle.setVerticalAlignment(excelField.verticalAlignment());
-            cell.setCellStyle(cellStyle);
-            sheet.setColumnWidth(i, excelField.width() * 128);
+    }
+
+    private void setDateValue(Cell cell, Object fieldValue) {
+        if (fieldValue instanceof Date) {
+            cell.setCellValue((Date) fieldValue);
+        } else if (fieldValue instanceof Number) {
+            cell.setCellValue(Double.valueOf(fieldValue.toString()));
+        } else if (fieldValue instanceof LocalDateTime) {
+            cell.setCellValue((LocalDateTime) fieldValue);
+        } else if (fieldValue instanceof LocalDate) {
+            cell.setCellValue((LocalDate) fieldValue);
+        } else if (fieldValue instanceof String) {
+            Double excelTime = DateTimeUtil.parseDateTime((String) fieldValue);
+            if(Objects.nonNull(excelTime))
+                cell.setCellValue(excelTime);
         }
     }
 

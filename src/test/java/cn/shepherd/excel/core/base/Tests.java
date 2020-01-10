@@ -1,6 +1,7 @@
 package cn.shepherd.excel.core.base;
 
 import cn.shepherd.excel.annotation.Excel;
+import cn.shepherd.excel.annotation.ExcelBigHead;
 import cn.shepherd.excel.annotation.ExcelField;
 import cn.shepherd.excel.core.ExcelMetadata;
 import lombok.Data;
@@ -47,6 +48,7 @@ public class Tests {
     }
 
     @Data
+    @ExcelBigHead(value = "Just an example", fontStyle = ExporterBaseTest.CustomFontStyle.class)
     @Excel(value = "Summary", headerColor = 0x0D, herderHigh = 1024, rowHigh = 512, fontStyle = ExporterBaseTest.CustomFontStyle.class)
     public class Model {
 
