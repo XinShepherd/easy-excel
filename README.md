@@ -107,7 +107,12 @@ public class Tests {
 }
 ```
 
-Run the test class, and then you can find the file `foo.xls` under the target directory.
+Run the test class, and then you can find the file `foo.xls` under the target directory. Just like:
+
+![avatar](./images/showcase.jpg)
+
 
 ## TODO
-
+- [x] 导出 Excel 功能
+- [ ] 增强导出 Excel 功能
+- [ ] 导入 Excel 功能
