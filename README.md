@@ -113,6 +113,6 @@ Run the test class, and then you can find the file `foo.xls` under the target di
 
 
 ## TODO
-- [x] 导出 Excel 功能
-- [ ] 增强导出 Excel 功能
-- [ ] 导入 Excel 功能
+- [x] **Export** Excel feature
+- [ ] **Enhance** exporting Excel feature
+- [ ] **Import** **Excel** feature
