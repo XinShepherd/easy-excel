@@ -21,7 +21,7 @@ import java.util.stream.Stream;
  * @author Fuxin
  * @since 2019/11/23 13:48
  */
-public class ExcelMetadata<T> {
+public class ExcelSheetMetadata<T> {
     /** sheet 实体类 */
     private final Class<T> clazz;
 
@@ -50,15 +50,18 @@ public class ExcelMetadata<T> {
      **/
     private final Map<String, CellStyle> cellStyleMap;
 
-    public ExcelMetadata(Class<T> clazz, List<T> data) {
-        this(clazz, data, new HSSFWorkbook());
+    private final String sheetName;
+
+    public ExcelSheetMetadata(Class<T> clazz, List<T> data, Workbook workbook) {
+        this(clazz, data, workbook, null);
     }
 
-    public ExcelMetadata(Class<T> clazz, List<T> data, Workbook workbook) {
+    public ExcelSheetMetadata(Class<T> clazz, List<T> data, Workbook workbook, String sheetName) {
         Excel excel = Objects.requireNonNull(clazz).getAnnotation(Excel.class);
         if (Objects.isNull(excel))
             throw new ExcelException(String.format("Can not get the @Excel annotation from this class %s", clazz.getName()));
         Objects.requireNonNull(data, "Data could not be null.");
+        this.sheetName = Objects.nonNull(sheetName) ? sheetName : excel.value();
         this.excelBigHead = clazz.getAnnotation(ExcelBigHead.class);
         this.clazz = clazz;
         this.data = data;
@@ -99,6 +102,10 @@ public class ExcelMetadata<T> {
 
     public Map<String, CellStyle> getCellStyleMap() {
         return cellStyleMap;
+    }
+
+    public String getSheetName() {
+        return sheetName;
     }
 
     private List<Field> filterExcelFields(Class<T> clazz) {

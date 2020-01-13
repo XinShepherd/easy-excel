@@ -3,10 +3,11 @@ package cn.shepherd.excel.core.base;
 import cn.shepherd.excel.annotation.Excel;
 import cn.shepherd.excel.annotation.ExcelBigHead;
 import cn.shepherd.excel.annotation.ExcelField;
-import cn.shepherd.excel.core.ExcelMetadata;
 import lombok.Data;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.io.FileOutputStream;
@@ -27,7 +28,8 @@ public class Tests {
 
     @Test
     void testExport() throws IOException {
-        ExporterBase exporterBase = new DefaultExporter();
+        Workbook workbook = new HSSFWorkbook();
+        ExporterBase exporterBase = new DefaultExporter(workbook);
         List<Model> data = new ArrayList<>();
         Model model = new Model();
         model.setName("foo");
@@ -38,11 +40,32 @@ public class Tests {
         data.add(model);
         data.add(model);
         data.add(model);
-        ExcelMetadata<Model> excelMetadata = exporterBase.generateMetadata(Model.class, data);
-        assertThat(excelMetadata).isNotNull();
-        Workbook workbook = excelMetadata.getWorkbook();
+        exporterBase.appendSheet(Model.class, data);
         assertThat(workbook.getSheet("Summary")).isNotNull();
         OutputStream out = new FileOutputStream("target/foo.xls");
+        workbook.write(out);
+        out.close();
+    }
+
+    @Test
+    @DisplayName("Same model class, different sheet name")
+    void testExportMultiSheets() throws IOException {
+        Workbook workbook = new HSSFWorkbook();
+        ExporterBase exporterBase = new DefaultExporter(workbook);
+        List<Model> data = new ArrayList<>();
+        Model model = new Model();
+        model.setName("foo");
+        model.setBirthDate(new Date());
+        model.setAge(10);
+        model.setTime(new Date());
+        model.setExcelTime(DateUtil.convertTime("3:40:36"));
+        data.add(model);
+        data.add(model);
+        data.add(model);
+        exporterBase.appendSheet(Model.class, data)
+                .appendSheet(Model.class, data, "Summary 2");
+        assertThat(workbook.getSheet("Summary")).isNotNull();
+        OutputStream out = new FileOutputStream("target/foo-multi.xls");
         workbook.write(out);
         out.close();
     }

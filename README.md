@@ -9,7 +9,7 @@
 <dependency>
     <groupId>cn.shepherd</groupId>
     <artifactId>easy-excel</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
 </dependency>
 ```
 
@@ -81,11 +81,13 @@ Create a test class.
 ```java
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
+// junit 5
 public class Tests {
 
     @Test
     void testExport() throws IOException {
-        ExporterBase exporterBase = new DefaultExporter();
+        Workbook workbook = new HSSFWorkbook();
+        ExporterBase exporterBase = new DefaultExporter(workbook);
         List<Model> data = new ArrayList<>();
         Model model = new Model();
         model.setName("foo");
@@ -96,11 +98,32 @@ public class Tests {
         data.add(model);
         data.add(model);
         data.add(model);
-        ExcelMetadata<Model> excelMetadata = exporterBase.generateMetadata(Model.class, data);
-        assertThat(excelMetadata).isNotNull();
-        Workbook workbook = excelMetadata.getWorkbook();
+        exporterBase.appendSheet(Model.class, data);
         assertThat(workbook.getSheet("Summary")).isNotNull();
         OutputStream out = new FileOutputStream("target/foo.xls");
+        workbook.write(out);
+        out.close();
+    }
+
+    @Test
+    @DisplayName("Same model class, different sheet name")
+    void testExportMultiSheets() throws IOException {
+        Workbook workbook = new HSSFWorkbook();
+        ExporterBase exporterBase = new DefaultExporter(workbook);
+        List<Model> data = new ArrayList<>();
+        Model model = new Model();
+        model.setName("foo");
+        model.setBirthDate(new Date());
+        model.setAge(10);
+        model.setTime(new Date());
+        model.setExcelTime(DateUtil.convertTime("3:40:36"));
+        data.add(model);
+        data.add(model);
+        data.add(model);
+        exporterBase.appendSheet(Model.class, data)
+                .appendSheet(Model.class, data, "Summary 2");
+        assertThat(workbook.getSheet("Summary")).isNotNull();
+        OutputStream out = new FileOutputStream("target/foo-multi.xls");
         workbook.write(out);
         out.close();
     }
@@ -114,5 +137,5 @@ Run the test class, and then you can find the file `foo.xls` under the target di
 
 ## TODO
 - [x] **Export** Excel feature
-- [ ] **Enhance** exporting Excel feature
+- [x] **Enhance** exporting Excel feature
 - [ ] **Import** **Excel** feature

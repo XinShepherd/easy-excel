@@ -2,10 +2,11 @@ package cn.shepherd.excel.core.base;
 
 import cn.shepherd.excel.annotation.Excel;
 import cn.shepherd.excel.annotation.ExcelField;
-import cn.shepherd.excel.core.ExcelMetadata;
+import cn.shepherd.excel.core.ExcelSheetMetadata;
 import cn.shepherd.excel.core.FontStyle;
 import cn.shepherd.excel.core.util.DateTimeUtil;
 import lombok.Data;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.junit.jupiter.api.Test;
@@ -28,16 +29,17 @@ class ExporterBaseTest {
 
     @Test
     void testGenerateEmptyWorkBook() {
-        ExporterBase exporterBase = new DefaultExporter();
+        Workbook workbook = new HSSFWorkbook();
+        ExporterBase exporterBase = new DefaultExporter(workbook);
         List<Model> data = new ArrayList<>();
-        ExcelMetadata<Model> excelMetadata = exporterBase.generateMetadata(Model.class, data);
-        assertThat(excelMetadata).isNotNull();
-        assertThat(excelMetadata.getWorkbook().getSheetAt(0)).isNotNull();
+        exporterBase.appendSheet(Model.class, data);
+        assertThat(workbook.getSheetAt(0)).isNotNull();
     }
 
     @Test
     void testGenerateWorkBookWithData() {
-        ExporterBase exporterBase = new DefaultExporter();
+        Workbook workbook = new HSSFWorkbook();
+        ExporterBase exporterBase = new DefaultExporter(workbook);
         List<Model> data = new ArrayList<>();
         Model model = new Model();
         model.setName("foo");
@@ -46,9 +48,7 @@ class ExporterBaseTest {
         data.add(model);
         data.add(model);
         data.add(model);
-        ExcelMetadata<Model> excelMetadata = exporterBase.generateMetadata(Model.class, data);
-        assertThat(excelMetadata).isNotNull();
-        Workbook workbook = excelMetadata.getWorkbook();
+        exporterBase.appendSheet(Model.class, data);
         assertThat(workbook.getSheetAt(0)).isNotNull();
         assertThat(workbook.getSheet("汇总表")).isNotNull();
         assertThat(workbook.getSheet("汇总表").getLastRowNum()).isEqualTo(3);
@@ -56,7 +56,8 @@ class ExporterBaseTest {
 
     @Test
     void testGenerateWorkBookWithDataIntoFile() throws IOException {
-        ExporterBase exporterBase = new DefaultExporter();
+        Workbook workbook = new HSSFWorkbook();
+        ExporterBase exporterBase = new DefaultExporter(workbook);
         List<Model> data = new ArrayList<>();
         Model model = new Model();
         model.setName("foo");
@@ -67,9 +68,7 @@ class ExporterBaseTest {
         data.add(model);
         data.add(model);
         data.add(model);
-        ExcelMetadata<Model> excelMetadata = exporterBase.generateMetadata(Model.class, data);
-        assertThat(excelMetadata).isNotNull();
-        Workbook workbook = excelMetadata.getWorkbook();
+        exporterBase.appendSheet(Model.class, data);
         assertThat(workbook.getSheet("汇总表")).isNotNull();
         // 定义输出流
         OutputStream out = new FileOutputStream("target/foo1.xls");
@@ -79,7 +78,8 @@ class ExporterBaseTest {
 
     @Test
     void testAppendWorkBookWithDataIntoFile() throws IOException {
-        ExporterBase exporterBase = new DefaultExporter();
+        Workbook workbook = new HSSFWorkbook();
+        ExporterBase exporterBase = new DefaultExporter(workbook);
         List<Model> data = new ArrayList<>();
         Model model = new Model();
         model.setName("foo");
@@ -90,9 +90,7 @@ class ExporterBaseTest {
         data.add(model);
         data.add(model);
         data.add(model);
-        ExcelMetadata<Model> excelMetadata = exporterBase.generateMetadata(Model.class, data);
-        assertThat(excelMetadata).isNotNull();
-        Workbook workbook = excelMetadata.getWorkbook();
+        exporterBase.appendSheet(Model.class, data);
         assertThat(workbook.getSheet("汇总表")).isNotNull();
         List<Detail> detailList = new ArrayList<>();
         Detail detail = new Detail();
@@ -104,17 +102,18 @@ class ExporterBaseTest {
         detailList.add(detail);
         detailList.add(detail);
         detailList.add(detail);
-        ExcelMetadata<Detail> context = exporterBase.appendSheet(Detail.class, detailList, excelMetadata.getWorkbook());
-        assertThat(context.getWorkbook().getSheet("详情表")).isNotNull();
+        exporterBase.appendSheet(Detail.class, detailList);
+        assertThat(workbook.getSheet("详情表")).isNotNull();
         // 定义输出流
         OutputStream out = new FileOutputStream("target/foo1.xls");
-        context.getWorkbook().write(out);
+        workbook.write(out);
         out.close();
     }
 
     @Test
     void testGenerateWorkBook() throws IOException {
-        ExporterBase exporterBase = new DefaultExporter();
+        Workbook workbook = new HSSFWorkbook();
+        ExporterBase exporterBase = new DefaultExporter(workbook);
         List<Model> data = new ArrayList<>();
         Model model = new Model();
         model.setName("foo");
@@ -137,9 +136,8 @@ class ExporterBaseTest {
         detailList.add(detail);
         detailList.add(detail);
         Map<Class, List> dataMap = new LinkedHashMap<>();
-        dataMap.put(Model.class, data);
-        dataMap.put(Detail.class, detailList);
-        Workbook workbook = exporterBase.generateWorkBook(dataMap);
+        exporterBase.appendSheet(Model.class, data)
+                .appendSheet(Detail.class, detailList);
         // 定义输出流
         OutputStream out = new FileOutputStream("target/foo2.xls");
         workbook.write(out);
