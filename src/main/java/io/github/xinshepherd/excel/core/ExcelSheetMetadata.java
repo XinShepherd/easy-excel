@@ -1,8 +1,8 @@
-package cn.shepherd.excel.core;
+package io.github.xinshepherd.excel.core;
 
-import cn.shepherd.excel.annotation.Excel;
-import cn.shepherd.excel.annotation.ExcelBigHead;
-import cn.shepherd.excel.annotation.ExcelField;
+import io.github.xinshepherd.excel.annotation.Excel;
+import io.github.xinshepherd.excel.annotation.ExcelBigHead;
+import io.github.xinshepherd.excel.annotation.ExcelField;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CreationHelper;

@@ -7,7 +7,7 @@
 
 ```xml
 <dependency>
-    <groupId>cn.shepherd</groupId>
+    <groupId>io.github.xinshepherd</groupId>
     <artifactId>easy-excel</artifactId>
     <version>1.1.0</version>
 </dependency>
@@ -41,7 +41,7 @@ public class Model {
 }
 ```
 
-You can custom font style by overriding `cn.shepherd.excel.core.FontStyle`'s methods.
+You can custom font style by overriding `io.github.xinshepherd.excel.core.FontStyle`'s methods.
 ```java
 public class CustomFontStyle implements FontStyle {
 

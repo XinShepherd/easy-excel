@@ -1,4 +1,4 @@
-package cn.shepherd.excel.core.util;
+package io.github.xinshepherd.excel.core.util;
 
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.util.LocaleUtil;

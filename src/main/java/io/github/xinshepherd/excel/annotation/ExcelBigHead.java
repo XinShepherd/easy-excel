@@ -1,7 +1,7 @@
-package cn.shepherd.excel.annotation;
+package io.github.xinshepherd.excel.annotation;
 
-import cn.shepherd.excel.core.DefaultFontStyle;
-import cn.shepherd.excel.core.FontStyle;
+import io.github.xinshepherd.excel.core.DefaultFontStyle;
+import io.github.xinshepherd.excel.core.FontStyle;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
 

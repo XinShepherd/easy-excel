@@ -1,4 +1,4 @@
-package cn.shepherd.excel.core;
+package io.github.xinshepherd.excel.core;
 
 import org.apache.poi.ss.usermodel.Workbook;
 
