@@ -8,9 +8,33 @@
     <artifactId>easy-excel</artifactId>
     <version>1.1.0</version>
 
+    <name>Easy excel</name>
+    <description>
+        Easy Usage of the Apache POI
+    </description>
+    <url>https://github.com/XinShepherd/easy-excel</url>
+    <developers>
+        <developer>
+            <id>fuxin</id>
+            <name>Xin Fu</name>
+            <email>okfuxin@gmail.com</email>
+        </developer>
+    </developers>
+    <scm>
+        <url>scm:https://github.com/XinShepherd/easy-excel.git</url>
+        <connection>scm:git@github.com:XinShepherd/easy-excel.git</connection>
+        <developerConnection>scm:git@github.com:XinShepherd/easy-excel.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>http://www.opensource.org/licenses/mit-license.php</url>
+        </license>
+    </licenses>
+
     <properties>
         <java.version>1.8</java.version>
-        <maven.baseurl>https://maven.dm-ai.cn</maven.baseurl>
     </properties>
     <dependencies>
         <!-- https://mvnrepository.com/artifact/org.apache.poi/poi -->
@@ -54,17 +78,14 @@
 
     <!-- 上传Maven Repo配置 -->
     <distributionManagement>
-        <!-- Release仓库 -->
-        <repository>
-            <id>dm-nexus-repository</id>
-            <url>${maven.baseurl}/repository/maven-releases/</url>
-        </repository>
-
-        <!-- Snapshot仓库 -->
         <snapshotRepository>
-            <id>dm-nexus-repository</id>
-            <url>${maven.baseurl}/repository/maven-snapshots</url>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+        </repository>
     </distributionManagement>
 
     <build>
@@ -93,5 +114,58 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>sonatype</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>1.6.7</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <serverId>sonatype</serverId>
+                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>3.0.1</version>
+                        <configuration>
+                            <failOnError>false</failOnError>
+                            <quiet>true</quiet>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.6</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>
