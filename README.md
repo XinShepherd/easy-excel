@@ -15,7 +15,7 @@
 
 ### 2. Examples
 
-Define a excel POJO.
+Define an excel POJO.
 
 ```java
 
@@ -76,7 +76,7 @@ class Model {
 }
 ```
 
-Create a test class.
+Create a test class with Junit 5(See [example](src/test/java/io/github/xinshepherd/excel/core/base/Tests.java)).
 
 ```java
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
