@@ -1,7 +1,11 @@
 # Easy Excel
 > An easy way to work for excel with apache POI
 
-## Quick Start
+## Getting Started
+
+### Requirement
+
+* Java 8+ 
 
 ### 1. Add Maven repository
 

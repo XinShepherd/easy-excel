@@ -11,6 +11,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * 用于设置大标题
+ *
  * @author Fuxin
  * @since 2020/1/10 17:01
  */
