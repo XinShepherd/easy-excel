@@ -75,4 +75,22 @@ public @interface Excel {
      * @return true or false
      */
     boolean freezePane() default true;
+
+    /**
+     * Get Horizontal position of split.
+     *
+     * @return Horizontal position of split
+     * @see Sheet#createFreezePane(int, int)
+     * @since 1.2.0
+     */
+    int colSplit() default 1;
+
+    /**
+     * Get Vertical position of split.
+     *
+     * @return Vertical position of split
+     * @see Sheet#createFreezePane(int, int)
+     * @since 1.2.0
+     */
+    int rowSplit() default 1;
 }

@@ -7,6 +7,7 @@ import lombok.Data;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -28,7 +29,7 @@ public class Tests {
 
     @Test
     void testExport() throws IOException {
-        Workbook workbook = new HSSFWorkbook();
+        Workbook workbook = new XSSFWorkbook();
         ExporterBase exporterBase = new DefaultExporter(workbook);
         List<Model> data = new ArrayList<>();
         Model model = new Model();
@@ -42,7 +43,7 @@ public class Tests {
         data.add(model);
         exporterBase.appendSheet(Model.class, data);
         assertThat(workbook.getSheet("Summary")).isNotNull();
-        OutputStream out = new FileOutputStream("target/foo.xls");
+        OutputStream out = new FileOutputStream("target/foo.xlsx");
         workbook.write(out);
         out.close();
     }
@@ -72,7 +73,13 @@ public class Tests {
 
     @Data
     @ExcelBigHead(value = "Just an example", fontStyle = ExporterBaseTest.CustomFontStyle.class)
-    @Excel(value = "Summary", headerColor = 0x0D, herderHigh = 1024, rowHigh = 512, fontStyle = ExporterBaseTest.CustomFontStyle.class)
+    @Excel(value = "Summary",
+            headerColor = 0x0D,
+            herderHigh = 1024,
+            rowHigh = 512,
+            fontStyle = ExporterBaseTest.CustomFontStyle.class,
+            colSplit = 2,
+            rowSplit = 2)
     public class Model {
 
         @ExcelField("Name")

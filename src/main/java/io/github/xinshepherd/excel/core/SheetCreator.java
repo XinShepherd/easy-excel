@@ -74,7 +74,7 @@ public class SheetCreator<T> {
         header.setHeight(metaExcel.herderHigh());
         // 处理是否固定表头
         if (metaExcel.freezePane()) {
-            sheet.createFreezePane(1, 1);
+            sheet.createFreezePane(metaExcel.colSplit(), metaExcel.rowSplit());
         }
         for (int i = 0; i < excelFields.size(); i++) {
             Field field = excelFields.get(i);
