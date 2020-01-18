@@ -1,8 +1,10 @@
-package io.github.xinshepherd.excel.core.base;
+package io.github.xinshepherd.excel;
 
 import io.github.xinshepherd.excel.annotation.Excel;
 import io.github.xinshepherd.excel.annotation.ExcelBigHead;
 import io.github.xinshepherd.excel.annotation.ExcelField;
+import io.github.xinshepherd.excel.core.base.DefaultExporter;
+import io.github.xinshepherd.excel.core.base.ExporterBase;
 import lombok.Data;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.DateUtil;
@@ -14,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -38,6 +41,8 @@ public class Tests {
         model.setAge(10);
         model.setTime(new Date());
         model.setExcelTime(DateUtil.convertTime("3:40:36"));
+        model.setStringTime("3:40:36");
+        model.setJavaTime(LocalTime.now());
         data.add(model);
         data.add(model);
         data.add(model);
@@ -60,6 +65,8 @@ public class Tests {
         model.setAge(10);
         model.setTime(new Date());
         model.setExcelTime(DateUtil.convertTime("3:40:36"));
+        model.setStringTime("3:40:36");
+        model.setJavaTime(LocalTime.now());
         data.add(model);
         data.add(model);
         data.add(model);
@@ -94,8 +101,14 @@ public class Tests {
         @ExcelField(value = "Time", type = ExcelField.CellType.DATE, datePattern = "h:mm:ss")
         private Date time;
 
-        @ExcelField(value = "Excel Time", type = ExcelField.CellType.DATE, datePattern = "h:mm:ss")
+        @ExcelField(value = "Excel Time", type = ExcelField.CellType.TIME, datePattern = "h:mm:ss")
         private double excelTime;
+
+        @ExcelField(value = "String Time", type = ExcelField.CellType.TIME, datePattern = "h:mm:ss")
+        private String stringTime;
+
+        @ExcelField(value = "Java Time", type = ExcelField.CellType.TIME, datePattern = "h:mm:ss")
+        private LocalTime javaTime;
 
     }
 }

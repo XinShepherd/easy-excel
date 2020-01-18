@@ -1,8 +1,11 @@
-package io.github.xinshepherd.excel.core.base;
+package io.github.xinshepherd.excel;
 
 import io.github.xinshepherd.excel.annotation.Excel;
 import io.github.xinshepherd.excel.annotation.ExcelField;
+import io.github.xinshepherd.excel.core.ExcelException;
 import io.github.xinshepherd.excel.core.FontStyle;
+import io.github.xinshepherd.excel.core.base.DefaultExporter;
+import io.github.xinshepherd.excel.core.base.ExporterBase;
 import io.github.xinshepherd.excel.core.util.DateTimeUtil;
 import lombok.Data;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -18,6 +21,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 
 /**
@@ -141,6 +145,16 @@ class ExporterBaseTest {
         OutputStream out = new FileOutputStream("target/foo2.xls");
         workbook.write(out);
         out.close();
+    }
+
+
+    @Test
+    void testException() {
+        Workbook workbook = new HSSFWorkbook();
+        ExporterBase exporterBase = new DefaultExporter(workbook);
+        List<CustomFontStyle> data = new ArrayList<>();
+        assertThatThrownBy(() -> exporterBase.appendSheet(CustomFontStyle.class, data))
+                .isInstanceOf(ExcelException.class);
     }
 
     @Data
