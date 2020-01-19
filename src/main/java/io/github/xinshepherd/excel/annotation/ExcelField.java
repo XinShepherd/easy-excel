@@ -1,5 +1,6 @@
 package io.github.xinshepherd.excel.annotation;
 
+import io.github.xinshepherd.excel.core.CellStyleProcessor;
 import io.github.xinshepherd.excel.core.DefaultFontStyle;
 import io.github.xinshepherd.excel.core.FontStyle;
 import org.apache.poi.hssf.util.HSSFColor;
@@ -95,6 +96,8 @@ public @interface ExcelField {
      * @return 数据单元格颜色
      */
     short color() default -1;
+
+    Class<? extends CellStyleProcessor> customStyle() default CellStyleProcessor.class;
 
     /**
      * 设置单元格字体

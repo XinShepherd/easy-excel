@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 import java.time.temporal.TemporalAccessor;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author Fuxin
@@ -139,17 +140,31 @@ public class SheetCreator<T> {
                                    Field field,
                                    Object fieldValue) {
         ExcelField excelField = field.getAnnotation(ExcelField.class);
+        String cellStyleKey = field.getName();
+        AtomicReference<String> label = new AtomicReference<>();
+        if (!excelField.customStyle().equals(CellStyleProcessor.class)) {
+            CellStyleProcessor cellStyleProcessor = context.getBean(excelField.customStyle());
+            label.set(cellStyleProcessor.getLabel(fieldValue));
+            cellStyleKey = String.format("%s-%s", cellStyleKey, label.get());
+        }
+        // 定义Cell格式
+        CellStyle cellStyle = metadata.getCellStyleMap().computeIfAbsent(cellStyleKey, key -> {
+            CellStyle style = metadata.getWorkbook().createCellStyle();
+            style.setAlignment(excelField.horizontalAlignment());
+            style.setVerticalAlignment(excelField.verticalAlignment());
+            if (DATE_CELL_TYPES.contains(excelField.type())) {
+                style.setDataFormat(metadata.getCreationHelper().createDataFormat().getFormat(excelField.datePattern()));
+            }
+            // 自定义样式
+            if (!excelField.customStyle().equals(CellStyleProcessor.class)) {
+                CellStyleProcessor cellStyleProcessor = context.getBean(excelField.customStyle());
+                style = cellStyleProcessor.customize(style, label.get());
+            }
+            return style;
+        });
+
+        cell.setCellStyle(cellStyle);
         if (Objects.nonNull(fieldValue)) {
-            // 定义Cell格式
-            CellStyle cellStyle = metadata.getCellStyleMap().computeIfAbsent(field.getName(), key -> {
-                CellStyle style = metadata.getWorkbook().createCellStyle();
-                style.setAlignment(excelField.horizontalAlignment());
-                style.setVerticalAlignment(excelField.verticalAlignment());
-                if (DATE_CELL_TYPES.contains(excelField.type())) {
-                    style.setDataFormat(metadata.getCreationHelper().createDataFormat().getFormat(excelField.datePattern()));
-                }
-                return style;
-            });
             switch (excelField.type()) {
                 case DATE:
                     setDateValue(cell, fieldValue);
@@ -163,7 +178,6 @@ public class SheetCreator<T> {
                 default: // 默认字符串格式
                     cell.setCellValue(fieldValue.toString());
             }
-            cell.setCellStyle(cellStyle);
         } else {
             cell.setBlank();
         }

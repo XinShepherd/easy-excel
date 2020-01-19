@@ -16,6 +16,9 @@ public class ExcelContext {
      */
     private final Map<String, FontStyle> fontStyleMap;
 
+    /** Cache of singleton objects created by FactoryBeans: FactoryBean name to object. */
+    private final Map<String, Object> factoryBeanObjectCache = new ConcurrentHashMap<>(16);
+
     public ExcelContext() {
         fontStyleMap = new ConcurrentHashMap<>();
     }
@@ -24,6 +27,19 @@ public class ExcelContext {
         return fontStyleMap.computeIfAbsent(clazz.getName(), key -> {
             try {
                 Constructor<? extends FontStyle> constructor = clazz.getConstructor();
+                constructor.setAccessible(true);
+                return constructor.newInstance();
+            } catch (Exception e) {
+                throw new ExcelException(e);
+            }
+        });
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T getBean(Class<T> clazz) {
+        return (T) factoryBeanObjectCache.computeIfAbsent(clazz.getName(), key -> {
+            try {
+                Constructor<T> constructor = clazz.getConstructor();
                 constructor.setAccessible(true);
                 return constructor.newInstance();
             } catch (Exception e) {
