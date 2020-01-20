@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
 
 /**
  * @author Fuxin
- * @since 2019/11/23 10:48
+ * @since 1.1.0
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

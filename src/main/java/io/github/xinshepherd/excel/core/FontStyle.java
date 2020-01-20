@@ -6,7 +6,7 @@ import org.apache.poi.ss.usermodel.Font;
  *
  * @see org.apache.poi.ss.usermodel.Font
  * @author Fuxin
- * @since 2019/11/19 10:16
+ * @since 1.1.0
  */
 public interface FontStyle {
 

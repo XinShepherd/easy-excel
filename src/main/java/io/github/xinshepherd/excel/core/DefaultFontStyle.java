@@ -2,7 +2,7 @@ package io.github.xinshepherd.excel.core;
 
 /**
  * @author Fuxin
- * @since 2019/11/19 10:34
+ * @since 1.1.0
  */
 public class DefaultFontStyle implements FontStyle {
 

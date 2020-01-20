@@ -2,7 +2,7 @@ package io.github.xinshepherd.excel.core;
 
 /**
  * @author Fuxin
- * @since 2019/11/23 10:43
+ * @since 1.1.0
  */
 public class ExcelException extends RuntimeException {
 

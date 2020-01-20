@@ -4,7 +4,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 
 /**
  * @author Fuxin
- * @since 2019/11/23 16:58
+ * @since 1.1.0
  */
 public class DefaultExporter extends ExporterBase {
 

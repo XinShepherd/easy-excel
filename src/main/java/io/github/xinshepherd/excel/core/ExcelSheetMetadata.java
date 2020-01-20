@@ -19,7 +19,7 @@ import java.util.stream.Stream;
 /**
  * Excel 单个 sheet 的元数据
  * @author Fuxin
- * @since 2019/11/23 13:48
+ * @since 1.1.0
  */
 public class ExcelSheetMetadata<T> {
     /** sheet 实体类 */
