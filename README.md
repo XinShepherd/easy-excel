@@ -47,7 +47,7 @@ public class Model {
 }
 ```
 
-You can custom font style by overriding `io.github.xinshepherd.excel.core.FontStyle`'s methods.
+You can customize font style by overriding `io.github.xinshepherd.excel.core.FontStyle`'s methods.
 ```java
 public class CustomFontStyle implements FontStyle {
 

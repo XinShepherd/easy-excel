@@ -37,10 +37,8 @@ public class ExcelSheetMetadata<T> {
     /** 表头字段 */
     private final List<Field> excelFields;
 
-    /**  */
     private final Workbook workbook;
 
-    /**  */
     private final CreationHelper creationHelper;
 
     /**
