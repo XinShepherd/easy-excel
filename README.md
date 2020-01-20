@@ -13,7 +13,7 @@
 <dependency>
     <groupId>io.github.xinshepherd</groupId>
     <artifactId>easy-excel</artifactId>
-    <version>1.1.0</version>
+    <version>1.2.0</version>
 </dependency>
 ```
 
