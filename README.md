@@ -83,7 +83,7 @@ class Model {
 }
 ```
 
-Create a test class with Junit 5(See [example](src/test/java/io/github/xinshepherd/excel/core/base/Tests.java)).
+Create a test class with Junit 5(See [example](src/test/java/io/github/xinshepherd/excel/Tests.java)).
 
 ```java
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
