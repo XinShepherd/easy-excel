@@ -1,14 +1,13 @@
-# Easy Excel  [English](./README.md) | [中文](./README-zh.md)
+# Easy Excel
+> 通过简单注解使用 apache POI 快速导出 Excel 文件
 
-> An easy way to work for excel with apache POI
+## 开始
 
-## Getting Started
-
-### Requirement
+### 要求
 
 * Java 8+ 
 
-### 1. Add Maven repository
+### 1. 添加依赖
 
 ```xml
 <dependency>
@@ -18,11 +17,11 @@
 </dependency>
 ```
 
-### 2. Examples
+### 2. 示例
 
-*If you use Spring Boot to build your application, you can see this [spring-boot-demo](https://github.com/XinShepherd/easy-excel-examples)* 
+*如果你的应用是使用Spring Boot搭建，可以参考这个例子 [spring-boot-demo](https://github.com/XinShepherd/easy-excel-examples)* 
 
-Firstly, define an excel POJO.
+首先, 定义一个实体类.
 
 ```java
 
@@ -48,7 +47,7 @@ public class Model {
 }
 ```
 
-You can customize font style by overriding `io.github.xinshepherd.excel.core.FontStyle`'s methods.
+你可以自定义字体样式，通过覆盖这个接口的方法 `io.github.xinshepherd.excel.core.FontStyle`.
 ```java
 public class CustomFontStyle implements FontStyle {
 
@@ -74,16 +73,16 @@ public class CustomFontStyle implements FontStyle {
     }
 ```
 
-Then set the `CustomFontStyle.class` to the property `fontStyle` of the Annotation `@Excel`.
+然后将这个类 `CustomFontStyle.class` 设置到注解 `@Excel` 的 `fontStyle` 属性中.
 ```java
 @Data
-@Excel(value = "Summary", headerColor = 0x0D, herderHigh = 1024, rowHigh = 512, fontStyle = FontStyle.class)
+@Excel(value = "Summary", headerColor = 0x0D, herderHigh = 1024, rowHigh = 512, fontStyle = CustomFontStyle.class)
 class Model {   
     //...
 }
 ```
 
-Create a test class with Junit 5(See [example](src/test/java/io/github/xinshepherd/excel/core/base/Tests.java)).
+最后可以创建一个Junit 5测试类，如下([example](src/test/java/io/github/xinshepherd/excel/core/base/Tests.java)).
 
 ```java
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -137,12 +136,12 @@ public class Tests {
 }
 ```
 
-Run the test class, and then you can find the file `foo.xls` under the target directory. Just like:
+运行这个测试类，然后可以在`target` 这个目录上找到文件 `foo.xls`，示例图如下:
 
 ![avatar](./images/showcase.jpg)
 
 
 ## TODO
-- [x] **Export** Excel feature
-- [x] **Enhance** exporting Excel feature
-- [ ] **Import** **Excel** feature
+- [x] **导出** Excel 特性
+- [x] **增强** 导出 Excel 特性
+- [ ] **导入** **Excel** 特性
