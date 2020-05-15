@@ -42,9 +42,8 @@ public class ImporterBase {
      */
     private static final String MATCH_TYPE_POSITION = "POSITION";
 
-    protected static final Function<Cell, Object> CONVERT_NUMBER = Cell::getNumericCellValue;
     protected static final Function<Cell, Object> CONVERT_INTEGER = cell -> (int) cell.getNumericCellValue();
-    protected static final Function<Cell, Object> CONVERT_SHORT = cell -> (int) cell.getNumericCellValue();
+    protected static final Function<Cell, Object> CONVERT_SHORT = cell -> (short) cell.getNumericCellValue();
     protected static final Function<Cell, Object> CONVERT_LONG = cell -> (long) cell.getNumericCellValue();
     protected static final Function<Cell, Object> CONVERT_DOUBLE = Cell::getNumericCellValue;
     protected static final Function<Cell, Object> CONVERT_FLOAT = cell -> (float) cell.getNumericCellValue();
@@ -91,7 +90,7 @@ public class ImporterBase {
     /**
      * 数据格式转换器MAP
      */
-    private Map<Field, Function<Cell, Object>> dataCovertMap = new HashMap<>();
+    private Map<Field, Function<Cell, Object>> dataConvertMap = new HashMap<>();
 
 
     public static ImporterBase newInstance(InputStream inputStream) {
@@ -166,12 +165,11 @@ public class ImporterBase {
 
             int cellNumber = titleRow.getPhysicalNumberOfCells();
             for (int i = start; i < end; i++) {
-                titleRow = sheet.getRow(i);
                 T t = cls.newInstance();
                 for (int j = 0; j < cellNumber; j++) {
                     Field field = columnFieldMap.get(j);
-                    if (field != null && titleRow.getCell(j) != null) {
-                        writeValue(t, field, titleRow.getCell(j));
+                    if (field != null && sheet.getRow(i).getCell(j) != null) {
+                        writeValue(t, field, sheet.getRow(i).getCell(j));
                     }
                 }
                 list.add(t);
@@ -191,7 +189,7 @@ public class ImporterBase {
             return;
         }
         try {
-            field.set(t, dataCovertMap.get(field).apply(cell));
+            field.set(t, dataConvertMap.get(field).apply(cell));
         } catch (Exception e) {
             throw new ExcelException(String.format("%s covert to %s error.", cell.getStringCellValue(), field.getName()));
         }
@@ -216,9 +214,9 @@ public class ImporterBase {
             }
         }
 
-        dataCovertMap = new HashMap<>(16);
+        dataConvertMap = new HashMap<>(16);
         for (Field field : columnFieldMap.values()) {
-            dataCovertMap.put(field, dataCovert(field));
+            dataConvertMap.put(field, dataCovert(field));
         }
     }
 
