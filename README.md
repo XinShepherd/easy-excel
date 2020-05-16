@@ -14,7 +14,7 @@
 <dependency>
     <groupId>io.github.xinshepherd</groupId>
     <artifactId>easy-excel</artifactId>
-    <version>1.2.0</version>
+    <version>1.3.0</version>
 </dependency>
 ```
 
@@ -145,4 +145,4 @@ Run the test class, and then you can find the file `foo.xls` under the target di
 ## TODO
 - [x] **Export** Excel feature
 - [x] **Enhance** exporting Excel feature
-- [ ] **Import** **Excel** feature
+- [x] **Import** **Excel** feature

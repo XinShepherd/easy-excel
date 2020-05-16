@@ -1,5 +1,5 @@
 # Easy Excel
-> 通过简单注解使用 apache POI 快速导出 Excel 文件
+> 通过简单注解使用 apache POI 快速导入导出 Excel 文件
 
 ## 开始
 
@@ -13,7 +13,7 @@
 <dependency>
     <groupId>io.github.xinshepherd</groupId>
     <artifactId>easy-excel</artifactId>
-    <version>1.2.0</version>
+    <version>1.3.0</version>
 </dependency>
 ```
 
@@ -144,4 +144,4 @@ public class Tests {
 ## TODO
 - [x] **导出** Excel 特性
 - [x] **增强** 导出 Excel 特性
-- [ ] **导入** **Excel** 特性
+- [x] **导入** **Excel** 特性
