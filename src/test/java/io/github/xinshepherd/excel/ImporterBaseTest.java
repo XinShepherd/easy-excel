@@ -88,6 +88,43 @@ public class ImporterBaseTest {
         Assert.assertEquals(85.5, student.getScore(), 0.00001);
     }
 
+    @Test
+    public void testImport3() throws Exception {
+        String filepath = getClass().getResource("/").getPath() + "/excel.xls";
+        InputStream is = new FileInputStream(filepath);
+        List<PositionStudent> students = ImporterBase.newInstance(is)
+                .contextType(ImporterBase.CONTEXT_TYPE_XLS)
+                .matchType(ImporterBase.MATCH_TYPE_POSITION)
+                .titleRowIndex(2)
+                .ignoreLastIndexes(1).resolve(PositionStudent.class);
+
+        Assert.assertNotNull(students);
+        Assert.assertEquals(3, students.size());
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyy-MM-dd");
+
+        PositionStudent student = students.get(0);
+        Assert.assertEquals("张三", student.getName());
+        Assert.assertEquals("男", student.getSex());
+        Assert.assertEquals("1990-10-10", sdf.format(student.getDate()));
+        Assert.assertEquals("29", student.getAge());
+        Assert.assertEquals(90.5, student.getScore(), 0.00001);
+
+        student = students.get(1);
+        Assert.assertEquals("李四", student.getName());
+        Assert.assertEquals("男", student.getSex());
+        Assert.assertEquals("1999-01-01", sdf.format(student.getDate()));
+        Assert.assertEquals("21", student.getAge());
+        Assert.assertEquals(80.5, student.getScore(), 0.00001);
+
+        student = students.get(2);
+        Assert.assertEquals("小红", student.getName());
+        Assert.assertEquals("女", student.getSex());
+        Assert.assertEquals("2000-02-02", sdf.format(student.getDate()));
+        Assert.assertEquals("", student.getAge());
+        Assert.assertEquals(85.5, student.getScore(), 0.00001);
+    }
+
     @Getter
     @Setter
     @Excel
@@ -105,6 +142,26 @@ public class ImporterBaseTest {
         private int age;
 
         @ExcelField("成绩")
+        private double score;
+    }
+
+    @Getter
+    @Setter
+    @Excel
+    public static class PositionStudent {
+        @ExcelField(position = 0)
+        private String name;
+
+        @ExcelField(position = 1)
+        private String sex;
+
+        @ExcelField(position = 2)
+        private Date date;
+
+        @ExcelField(position = 3)
+        private String age;
+
+        @ExcelField(position = 4)
         private double score;
     }
 }
