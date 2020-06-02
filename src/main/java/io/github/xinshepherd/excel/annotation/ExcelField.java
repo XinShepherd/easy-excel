@@ -107,6 +107,15 @@ public @interface ExcelField {
      */
     Class<? extends FontStyle> fontStyle() default DefaultFontStyle.class;
 
+    /**
+     * 从excel文件映射到java类时，若是用 MATCH_TYPE_POSITION 匹配方式
+     * 则会根据通这个position值来寻找excel表格里第几列(0开头)，相同的话就将那一列映射到对应的java类字段
+     * 否则会根据列名来匹配
+     *
+     * @since 1.3.1
+     */
+    int position() default -1;
+
     enum CellType {
         TEXT,
         NUMERIC,

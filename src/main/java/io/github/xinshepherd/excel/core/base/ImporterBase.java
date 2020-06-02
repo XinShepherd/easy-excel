@@ -18,37 +18,44 @@ import java.util.function.Function;
  * 将excel表格导入解析成对应的java类
  *
  * @author donglin
- * @since  1.3.0
+ * @since 1.3.1
  */
 public class ImporterBase {
-
-    private static final String FILE_NAME_SUFFIX_XLS = ".xls";
-    private static final String FILE_NAME_SUFFIX_XLSX = ".xlsx";
-
-    private static final String CONTEXT_TYPE_XLS = "application/vnd.ms-excel";
-    private static final String CONTEXT_TYPE_XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
     /**
      * 根据标题来匹配. 即通过ExcelField注解的value值来寻找excel表格里的列标题所在的列，相同的话就将那一列映射到对应的java类字段
      *
      * @see ExcelField value
      */
-    private static final String MATCH_TYPE_TITLE = "TITLE";
+    public static final String MATCH_TYPE_TITLE = "TITLE";
 
     /**
      * 根据位置来匹配.  即通过ExcelField注解的position值来寻找excel表格里第几列(0开头)，相同的话就将那一列映射到对应的java类字段
      *
      * @see ExcelField position
      */
-    private static final String MATCH_TYPE_POSITION = "POSITION";
+    public static final String MATCH_TYPE_POSITION = "POSITION";
+
+    public static final String CONTEXT_TYPE_XLS = "application/vnd.ms-excel";
+    public static final String CONTEXT_TYPE_XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
+    private static final String FILE_NAME_SUFFIX_XLS = ".xls";
+    private static final String FILE_NAME_SUFFIX_XLSX = ".xlsx";
 
     protected static final Function<Cell, Object> CONVERT_INTEGER = cell -> (int) cell.getNumericCellValue();
     protected static final Function<Cell, Object> CONVERT_SHORT = cell -> (short) cell.getNumericCellValue();
     protected static final Function<Cell, Object> CONVERT_LONG = cell -> (long) cell.getNumericCellValue();
     protected static final Function<Cell, Object> CONVERT_DOUBLE = Cell::getNumericCellValue;
     protected static final Function<Cell, Object> CONVERT_FLOAT = cell -> (float) cell.getNumericCellValue();
-    protected static final Function<Cell, Object> CONVERT_STRING = Cell::getStringCellValue;
+    protected static final Function<Cell, Object> CONVERT_STRING;
     protected static final Function<Cell, Object> CONVERT_DATE = Cell::getDateCellValue;
+
+    static {
+        CONVERT_STRING = cell -> {
+            cell.setCellType(CellType.STRING);
+            return cell.getStringCellValue();
+        };
+    }
 
     /**
      * 映射类型，默认是按标题的
@@ -79,7 +86,6 @@ public class ImporterBase {
      * 输入流
      */
     private final InputStream inputStream;
-
 
     /**
      * key: excel表格的第几列 (从0开始)
@@ -142,34 +148,30 @@ public class ImporterBase {
         } else {
             workbook = newWorkbookByContextType(inputStream, CONTEXT_TYPE_XLSX);
         }
-        if (MATCH_TYPE_POSITION.equals(matchType)) {
-            return resolveByPosition(workbook, cls);
-        } else {
-            return resolveByTitle(workbook, cls);
-        }
+        initData(workbook, cls);
+        return resolve(workbook, cls);
     }
 
-    private <T> List<T> resolveByTitle(Workbook workbook, Class<T> cls) throws Exception {
+    private <T> List<T> resolve(Workbook workbook, Class<T> cls) throws Exception {
         try {
             List<T> list = new ArrayList<>();
             // 暂时只处理第一个sheet
             Sheet sheet = workbook.getSheetAt(0);
-            // 获取标题行
-            Row titleRow = sheet.getRow(this.titleRowIndex);
-
-            initColumnFieldMap(titleRow, cls);
 
             // 从标题行的下一行开始解析，并忽略掉最后几行需要忽略的
             int start = titleRowIndex + 1;
             int end = sheet.getPhysicalNumberOfRows() - ignoreLastIndexes;
 
-            int cellNumber = titleRow.getPhysicalNumberOfCells();
+            // 获取列数量
+            int cellNumber = sheet.getRow(titleRowIndex).getPhysicalNumberOfCells();
+            Row row;
             for (int i = start; i < end; i++) {
                 T t = cls.newInstance();
+                row = sheet.getRow(i);
                 for (int j = 0; j < cellNumber; j++) {
                     Field field = columnFieldMap.get(j);
-                    if (field != null && sheet.getRow(i).getCell(j) != null) {
-                        writeValue(t, field, sheet.getRow(i).getCell(j));
+                    if (field != null && row.getCell(j) != null) {
+                        writeValue(t, field, row.getCell(j));
                     }
                 }
                 list.add(t);
@@ -178,10 +180,6 @@ public class ImporterBase {
         } finally {
             workbook.close();
         }
-    }
-
-    private <T> List<T> resolveByPosition(Workbook workbook, Class<T> cls) {
-        throw new ExcelException("Not support MATCH_TYPE_POSITION for now");
     }
 
     private <T> void writeValue(T t, Field field, Cell cell) {
@@ -195,6 +193,21 @@ public class ImporterBase {
         }
     }
 
+
+    private <T> void initData(Workbook workbook, Class<T> cls) {
+        // 暂时只处理第一个sheet
+        Sheet sheet = workbook.getSheetAt(0);
+        if (MATCH_TYPE_TITLE.equals(matchType)) {
+            // 获取标题行
+            Row titleRow = sheet.getRow(this.titleRowIndex);
+            initColumnFieldMap(titleRow, cls);
+        } else if (MATCH_TYPE_POSITION.equals(matchType)) {
+            initColumnFieldMap(cls);
+        } else {
+            throw new ExcelException("Not support " + matchType);
+        }
+        initDateCovertMap();
+    }
 
     private <T> void initColumnFieldMap(Row row, Class<T> cls) {
         int size = row.getPhysicalNumberOfCells();
@@ -214,7 +227,21 @@ public class ImporterBase {
             }
         }
 
-        dataConvertMap = new HashMap<>(16);
+    }
+
+    private <T> void initColumnFieldMap(Class<T> cls) {
+        columnFieldMap = new HashMap<>(16);
+        for (Field field : cls.getDeclaredFields()) {
+            ExcelField excelField = field.getDeclaredAnnotation(ExcelField.class);
+            if (excelField != null) {
+                field.setAccessible(true);
+                columnFieldMap.put(excelField.position(), field);
+            }
+        }
+    }
+
+    private void initDateCovertMap() {
+        dataConvertMap = new HashMap<>(columnFieldMap.size());
         for (Field field : columnFieldMap.values()) {
             dataConvertMap.put(field, dataCovert(field));
         }
@@ -247,7 +274,6 @@ public class ImporterBase {
         throw new ExcelException(String.format("Not support %s for now.", cls.getName()));
     }
 
-
     private static Workbook newWorkbookByFilename(InputStream in, String filename) throws IOException {
         String suffix = filename.contains(".") ? filename.substring(filename.lastIndexOf('.')) : "";
         if (FILE_NAME_SUFFIX_XLS.equalsIgnoreCase(suffix)) {
@@ -265,7 +291,7 @@ public class ImporterBase {
         } else if (CONTEXT_TYPE_XLSX.equalsIgnoreCase(contextType)) {
             return new XSSFWorkbook(in);
         } else {
-            throw new ExcelException("the file is not excel.");
+            throw new ExcelException("Not support the contextType " + contextType);
         }
     }
 
