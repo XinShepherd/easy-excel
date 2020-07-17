@@ -52,31 +52,31 @@ public class ImporterBase {
 
     static {
         CONVERT_INTEGER = cell -> {
-            if (CellType.BLANK.equals(cell.getCellType())) {
-                return 0;
-            }
-            if (CellType.NUMERIC.equals(cell.getCellType())) {
+            if (CellType.NUMERIC.equals(cell.getCellType()) || CellType.FORMULA.equals(cell.getCellType())) {
                 return (int) cell.getNumericCellValue();
             }
-            return Integer.parseInt(cell.getStringCellValue());
+            if (CellType.STRING.equals(cell.getCellType())) {
+                return Integer.parseInt(cell.getStringCellValue());
+            }
+            return 0;
         };
         CONVERT_LONG = cell -> {
-            if (CellType.BLANK.equals(cell.getCellType())) {
-                return 0;
-            }
-            if (CellType.NUMERIC.equals(cell.getCellType())) {
+            if (CellType.NUMERIC.equals(cell.getCellType()) || CellType.FORMULA.equals(cell.getCellType())) {
                 return (long) cell.getNumericCellValue();
             }
-            return Long.parseLong(cell.getStringCellValue());
+            if (CellType.STRING.equals(cell.getCellType())) {
+                return Long.parseLong(cell.getStringCellValue());
+            }
+            return 0L;
         };
         CONVERT_DOUBLE = cell -> {
-            if (CellType.BLANK.equals(cell.getCellType())) {
-                return 0;
-            }
-            if (CellType.NUMERIC.equals(cell.getCellType())) {
+            if (CellType.NUMERIC.equals(cell.getCellType()) || CellType.FORMULA.equals(cell.getCellType())) {
                 return cell.getNumericCellValue();
             }
-            return Double.parseDouble(cell.getStringCellValue());
+            if (CellType.STRING.equals(cell.getCellType())) {
+                return Double.parseDouble(cell.getStringCellValue());
+            }
+            return 0.0;
         };
         CONVERT_STRING = cell -> {
             cell.setCellType(CellType.STRING);
