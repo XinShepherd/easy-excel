@@ -42,15 +42,42 @@ public class ImporterBase {
     private static final String FILE_NAME_SUFFIX_XLS = ".xls";
     private static final String FILE_NAME_SUFFIX_XLSX = ".xlsx";
 
-    protected static final Function<Cell, Object> CONVERT_INTEGER = cell -> (int) cell.getNumericCellValue();
+    protected static final Function<Cell, Object> CONVERT_INTEGER;
     protected static final Function<Cell, Object> CONVERT_SHORT = cell -> (short) cell.getNumericCellValue();
-    protected static final Function<Cell, Object> CONVERT_LONG = cell -> (long) cell.getNumericCellValue();
-    protected static final Function<Cell, Object> CONVERT_DOUBLE = Cell::getNumericCellValue;
+    protected static final Function<Cell, Object> CONVERT_LONG;
+    protected static final Function<Cell, Object> CONVERT_DOUBLE;
     protected static final Function<Cell, Object> CONVERT_FLOAT = cell -> (float) cell.getNumericCellValue();
     protected static final Function<Cell, Object> CONVERT_STRING;
     protected static final Function<Cell, Object> CONVERT_DATE = Cell::getDateCellValue;
 
     static {
+        CONVERT_INTEGER = cell -> {
+            if (CellType.NUMERIC.equals(cell.getCellType()) || CellType.FORMULA.equals(cell.getCellType())) {
+                return (int) cell.getNumericCellValue();
+            }
+            if (CellType.STRING.equals(cell.getCellType())) {
+                return Integer.parseInt(cell.getStringCellValue());
+            }
+            return 0;
+        };
+        CONVERT_LONG = cell -> {
+            if (CellType.NUMERIC.equals(cell.getCellType()) || CellType.FORMULA.equals(cell.getCellType())) {
+                return (long) cell.getNumericCellValue();
+            }
+            if (CellType.STRING.equals(cell.getCellType())) {
+                return Long.parseLong(cell.getStringCellValue());
+            }
+            return 0L;
+        };
+        CONVERT_DOUBLE = cell -> {
+            if (CellType.NUMERIC.equals(cell.getCellType()) || CellType.FORMULA.equals(cell.getCellType())) {
+                return cell.getNumericCellValue();
+            }
+            if (CellType.STRING.equals(cell.getCellType())) {
+                return Double.parseDouble(cell.getStringCellValue());
+            }
+            return 0.0;
+        };
         CONVERT_STRING = cell -> {
             cell.setCellType(CellType.STRING);
             return cell.getStringCellValue();
