@@ -6,7 +6,7 @@
 
     <groupId>io.github.xinshepherd</groupId>
     <artifactId>easy-excel</artifactId>
-    <version>1.4.1-SNAPSHOT</version>
+    <version>1.4.0-SNAPSHOT</version>
 
     <name>Easy excel</name>
     <description>
